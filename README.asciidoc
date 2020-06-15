@@ -1,0 +1,439 @@
+# Decorator Desing Pattern 
+
+Decorator, Structural Tasarım Deseni üyesidir. Yazılımcılar arasında *wrapper* (sargı) olarak da bilinir. Kullanımın , anlaşılmasının kolay olması ile kullanım sıklığı baya yüksektir.
+
+NOTE: *Amaç :* Bir nesneye _dinamik_ olarak yeni özellikler eklemek.
+
+## Decorator Yapısı
+
+Şimdi şöyle bir örnek vererek kafamızda canlanmasını sağlayalım. 
+
+Bir adet silah adında bir soyut sınıfımız olsun. Bu sınıftan türeyen bir BaseWeapon sınıfımız var . Bu BaseWeapon bir silahta olması gereken genel özellikleri barındırıyor. Herhangi ek bir özelliği yok.
+
+Weapon sınıfından türeyen WeaponAccesory ise silah üzerine yeni özellikler ekleyebileceğimiz bir soyut sınıf , böylece BaseWeapon sınıfını alıp dürbün ekleyerek yeni bir sınıf elde edebiliriz.
+
+Daha sonra elde ettiğimiz dürbünlü silaha lazer özelliği ekleyerek dahada gelişmiş bir silah elde ederiz.
+
+Dikkat etmemiz gereken yer ise her biri Weapon sınıfında türeyecek olması ve sonuçta her birinin bir Silah olmasıdır.
+
+image::sample.jpg[]
+
+WARNING: Tamam iyi güzel biz silahlarımıza yeni özellik ekledik. Peki Kalıtım dururken neden Decorator yapısını kullanalım ki ??
+
+#### Cevap 
+
+- Şöyle düşünelim bir BaseWeapon adlı genel bir silahımız var. Dürbün eklemek için DurbunWeapon diye ayrı bir sınıf açtık. DurbunWeapon'dan kalıtılan ayrı bir sınıf, BaseWeapondan ayrı bir sınıf derken ortaya kalıtım kaosu çıkar.
+
+image::kaos.jpg[]
+
+- Decorator'ın bir diğer ve en belirgin avantajı ise belirli sınıfları dinamik olarak kullanabiliyor oluşumuz.
+Dürbün , laserli bir silah , susturucu ve dürbünlü ayrı bir silah ile dinamik bir şekilde silah oluşturabiliriz.
+
+### Örnek 
+
+Örnek için şu şekilde düşünelim. Sene 1968 Amerikasındayız ve Apollo görevleri için NASA 'da çalışan bir yazılım mühendisiyiz. 
+
+[uml,file=decorator.png]
+-----
+interface IApollo{
+    + getSpeed() : double
+    + withHuman() : boolean
+    + getSpaceShuttle() : String
+    + liftOff() : void
+    + getCrew() : ArrayList<String>
+
+}
+
+class Apollo1{
+ -ArrayList<String> crew;
+ +Apollo1(String c1 , String c2);
+}
+
+class Apollo2 {
+    -ArrayList<String> pets;
+}
+
+abstract class Decorator {
+    +IApollo apollo;
+    +Decorator(IApollo apollo)
+        
+}
+
+class Apollo11 {
+
+    -String newCrew;
+    - ArrayList<String> crew ;
+    +Apollo11(IApollo apollo, String c1 ) 
+    +void sendToMoon()
+    }
+    
+class Apollo17 {
+
+    +String searchMoonStone;
+
+    +Apollo17(IApollo apollo , String searchMoonStone) 
+    
+    +LunarModule() : void 
+}
+
+class NASA {
+    + {static} main(String[] args) : void 
+    + {static} spaceFeatures(IApollo apollo) : void
+}
+
+
+
+IApollo <|.. Apollo1
+IApollo <|.. Apollo2
+IApollo <|.. Decorator
+IApollo --o Decorator
+Decorator <|.. Apollo11
+Decorator <|.. Apollo17
+
+NASA .|> IApollo
+
+-----
+
+Apollo görevleri tamamlandıktan sonra ortaya çıkacak olan UML diyagramı tahminen şu şekilde olacaktır.
+
+. NASA, IApollo üzerinden uzay araçlarını üretiyor. 
+
+. Apollo1 ve Apollo2 bizim temel araçlarımız, Apollo1 insanlı , Apollo2 insansız uçuşu temel alır.
+
+. Daha sonra Decorator kullanılarak Apollo serilerine dinamik şekilde yeni özellikler ekleyerek uçuşa hazırlıyoruz.
+
+. Örneğin Apollo11 için yeni bir özellik spaceToMoon , Apollo17 de yeni gelen özellik  ise LunarModule
+
+Şimdi kodlamanın nasıl yapılacağına göz atalım.
+
+#### IApollo
+[source,]
+----
+public interface IApollo {
+<1>
+    double getSpeed();
+    boolean withHuman();
+    String getSpaceShuttle();
+    void liftOff();
+    ArrayList<String> getCrew();
+
+}
+----
+<1> Apollo uçuşlarında olması gereken fonksiyonları tanımladık
+
+#### Apollo1
+[source,]
+----
+public class Apollo1 implements IApollo{
+
+    private ArrayList<String> crew;
+<1>
+    Apollo1(String c1 , String c2) {
+        crew = new ArrayList<>();
+        crew.add(c1);
+        crew.add(c2);
+    }
+
+<2>
+    @Override
+    public double getSpeed() {
+        // km/hr
+        return 2980;
+    }
+
+    @Override
+    public boolean withHuman() {
+        return true;
+    }
+
+    @Override
+    public String getSpaceShuttle() {
+        return "SaturnV";
+    }
+
+    @Override
+    public ArrayList<String> getCrew() {
+        return crew;
+    }
+<3>
+    @Override
+    public void liftOff() {
+        System.out.println("^\n" + "|\n" + "|\n" + "|\n" +".\n" +".   3 2 1 Lift Off " );
+    }
+
+
+}
+----
+<1> Apollo1 temel uçuşu insanlı olacaktır.İki kişilik mürettebattan oluşan uçuşu isimleri alarak başlıyoruz.
+<2> Belirli özellikleri belirliyoruz
+<3> ve Uçuş...
+
+#### Apollo2
+
+[source,]
+----
+public class Apollo2 implements IApollo{
+<1>
+    private ArrayList<String> pets;
+
+    Apollo2() {
+
+    }
+<2>
+    @Override
+    public double getSpeed() {
+        // km/hr
+        return 12747;
+    }
+<3>
+    @Override
+    public boolean withHuman() {
+        return false;
+    }
+
+    @Override
+    public String getSpaceShuttle() {
+        return "SaturnIB";
+    }
+
+    @Override
+    public ArrayList<String> getCrew() {
+        return pets;
+    }
+
+    @Override
+    public void liftOff() {
+        System.out.println("^\n" + "|\n" + "|\n" + "|\n" +".\n" +".   3 2 1 Lift Off " );
+    }
+
+
+}
+----
+<1> Apollo2 programı ise çok farklı bir program olduğundan farklı bir sınıfta tanımladık.İnsansız olacağından sadece hayvanlara izin verilir.
+<2> Özelliklerin Apollo1 den çok farklı olduğuna dikkat edin.İnsansız olduğundan daha hızlı
+<3> Uçuşun insansız olduğu dikkat çekiyor.
+
+#### Decorator
+
+Sırada Tasarım Desenimize adını veren Decorator sanal sınıfı var.
+[source,]
+----
+<1>
+public abstract class Decorator implements IApollo{
+    IApollo apollo;
+<2>
+    Decorator(IApollo apollo){
+        this.apollo = apollo;
+    }
+    
+<3>
+    public double getSpeed() {
+        return apollo.getSpeed();
+    }
+
+
+    public boolean withHuman() {
+        return apollo.withHuman();
+    }
+
+
+    public String getSpaceShuttle() {
+        return apollo.getSpaceShuttle();
+    }
+
+    public void liftOff() { apollo.liftOff(); }
+
+    public ArrayList<String> getCrew() {
+        return apollo.getCrew();
+    }
+
+
+}
+
+----
+<1> Abstract class, ortak özellikleri olan nesneleri bir çatı altında toplamak için kullanılır.
+<2> Decorator Constructor, atası IApollo olan ve kullanıcının dinamik olarak belirleyeceği sınıfı alır.
+<3> Dinamik olarak alınan sınıfın özellikleri fonksiyonlara atanır.
+
+Decorator sayesinde belirlenen sınıflar üzerinde **süs**leme işlemi yapılarak yeni sınıflar elde edilir.
+
+#### Apollo11
+
+Bu süsleme işlemi yapılan bir sınıf olan Apollo11 sınıfını inceleyelim.
+
+[source,]
+----
+<1>
+public class Apollo11 extends Decorator {
+
+<2>
+    private String newCrew;
+    private ArrayList<String> crew ;
+    Apollo11(IApollo apollo, String c1 ) {
+        super(apollo);
+        crew = new ArrayList<>();
+        this.newCrew = c1;
+    }
+<3>
+    @Override
+    public double getSpeed() {
+        // Apollo 11 is faster than Apollo 1
+        return super.getSpeed() + 300;
+    }
+
+    @Override
+    public boolean withHuman() {
+        return super.withHuman();
+    }
+
+    @Override
+    public String getSpaceShuttle() {
+        return super.getSpaceShuttle();
+    }
+<4>
+    @Override
+    public ArrayList<String> getCrew() {
+         super.getCrew().add(newCrew);
+         return super.getCrew();
+    }
+
+    @Override
+    public void liftOff() {
+        super.liftOff();
+        sendToMoon();
+    }
+<5>
+    public void sendToMoon(){
+        System.out.println("One small steps for man, one giant leap for mankind ");
+    }
+}
+----
+<1> Decorator sınıfından kalıtıyoruz
+<2> Apollo11 için en az 1 adet mürettebat gerekiyor.
+<3> Apollo11 , süslenecek sınıfa +300 km hız ekliyor
+<4> Apollo11 'e gelecek olan temel sınıftan mürettebatı alıyor ve üzerine 1 kişi daha ekliyor.
+<5> Apollo11'e özgü özellik Ay'a uçuş ve Apollo11 görevinde Armstong'un Ay'a adım attıktan sonra söylemiş olduğu cümle...
+
+
+
+
+#### Apollo17
+
+Süsleme için bir sınıf daha ürettik. Apollo17 uçuşu ise Ay'da değerli taş aramak için oluşturulmuş özel bir görev
+
+[source,]
+----
+public class Apollo17 extends Decorator {
+<1>
+    String searchMoonStone;
+
+    Apollo17(IApollo apollo , String searchMoonStone) {
+        super(apollo);
+        this.searchMoonStone = searchMoonStone;
+    }
+
+    @Override
+    public double getSpeed() {
+        return super.getSpeed();
+    }
+
+    @Override
+    public boolean withHuman() {
+        return super.withHuman();
+    }
+
+    @Override
+    public String getSpaceShuttle() {
+        return super.getSpaceShuttle();
+    }
+
+    @Override
+    public void liftOff() {
+        super.liftOff();
+        LunarModule();
+    }
+
+    @Override
+    public ArrayList<String> getCrew() {
+        return super.getCrew();
+    }
+<2>
+    public void LunarModule(){
+        System.out.println("Searching " + searchMoonStone);
+    }
+----
+<1> Aranacak taş NASA tarafından belirleniyor
+<2> LunarModulü ile taş arama başlıyor.
+
+
+## NASA
+
+[source,]
+----
+public class NASA {
+
+    public static void main(String[] args){
+<1>
+        IApollo apollo1 = new Apollo1("Aldrin","Collins");
+<2>
+        IApollo apollo11 =  new Apollo11( new Apollo1("Aldrin","Collins"),"Armstong");
+<3>
+        IApollo apollo17 = new Apollo17(new Apollo11(new Apollo1("Duke","Schmit"),"Evans"),"Diamond");
+<4>
+        IApollo apollo2 = new Apollo17(new Apollo2(),"Gold");
+
+
+
+<6>
+        System.out.println("Apollo 1 ");
+        System.out.println("-------------------");
+        spaceFeatures(apollo1);
+        System.out.println("-------------------");
+
+        System.out.println("Apollo 11");
+        System.out.println("-------------------");
+        spaceFeatures(apollo11);
+        System.out.println("-------------------");
+
+        System.out.println("Apollo 17");
+        System.out.println("-------------------");
+        spaceFeatures(apollo17);
+        System.out.println("-------------------");
+
+        System.out.println("Apollo 2");
+        System.out.println("-------------------");
+        spaceFeatures(apollo2);
+        System.out.println("-------------------");
+
+<7>
+        apollo11.liftOff();
+
+
+    }
+<5>
+    public static void spaceFeatures(IApollo apollo){
+        System.out.println("Speed : " + apollo.getSpeed());
+        System.out.println("Crew : " + apollo.getCrew());
+        System.out.println("Space Shuttle : " + apollo.getSpaceShuttle());
+    }
+
+
+}
+----
+<1> 2 Kişilik mürettebattan oluşan Apollo1
+<2> Apollo1 özelliklerini taşıyan , Apollo11 ile süslenen sınıf
+<3> Apollo11 özelliklerini taşıyıp elmas arayan Apollo17
+<4> İnsansız olarak uçan Apollo2 özelliklerini taşıyıp ek olarak Altın arayan Apollo17
+
+<5> Uçuş hakkında bilgi veren fonksiyon
+
+<6> Uçuşların özelliklerini gösteren işlemler
+
+image::nasa.png[]
+
+
+<7> Apollo11 Lift Off
+
+image::apollo11.png[]
+
+
