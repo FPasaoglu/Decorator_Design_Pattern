@@ -33,66 +33,8 @@ Dürbün , laserli bir silah , susturucu ve dürbünlü ayrı bir silah ile dina
 
 Örnek için şu şekilde düşünelim. Sene 1968 Amerikasındayız ve Apollo görevleri için NASA 'da çalışan bir yazılım mühendisiyiz. 
 
-[uml,file=decorator.png]
------
-interface IApollo{
-    + getSpeed() : double
-    + withHuman() : boolean
-    + getSpaceShuttle() : String
-    + liftOff() : void
-    + getCrew() : ArrayList<String>
+image::decorator.png[]
 
-}
-
-class Apollo1{
- -ArrayList<String> crew;
- +Apollo1(String c1 , String c2);
-}
-
-class Apollo2 {
-    -ArrayList<String> pets;
-}
-
-abstract class Decorator {
-    +IApollo apollo;
-    +Decorator(IApollo apollo)
-        
-}
-
-class Apollo11 {
-
-    -String newCrew;
-    - ArrayList<String> crew ;
-    +Apollo11(IApollo apollo, String c1 ) 
-    +void sendToMoon()
-    }
-    
-class Apollo17 {
-
-    +String searchMoonStone;
-
-    +Apollo17(IApollo apollo , String searchMoonStone) 
-    
-    +LunarModule() : void 
-}
-
-class NASA {
-    + {static} main(String[] args) : void 
-    + {static} spaceFeatures(IApollo apollo) : void
-}
-
-
-
-IApollo <|.. Apollo1
-IApollo <|.. Apollo2
-IApollo <|.. Decorator
-IApollo --o Decorator
-Decorator <|.. Apollo11
-Decorator <|.. Apollo17
-
-NASA .|> IApollo
-
------
 
 Apollo görevleri tamamlandıktan sonra ortaya çıkacak olan UML diyagramı tahminen şu şekilde olacaktır.
 
